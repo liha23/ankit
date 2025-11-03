@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YourCab - Cancellation Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .nav-buttons a {
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .nav-buttons a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .feature {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .feature p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background: #5568d3;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚕 YourCab</h1>
+            <p>AI-Powered Cab Cancellation Prediction System</p>
+        </header>
+        
+        <div class="nav-buttons">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/predict">Make Prediction</a>
+            <a href="/sample-data">Download Sample Data</a>
+        </div>
+        
+        <div class="card">
+            <h2>Welcome to YourCab Prediction System</h2>
+            <p style="color: #666; line-height: 1.8; margin-bottom: 20px;">
+                Our advanced machine learning system uses Random Forest Classifier to predict 
+                whether a cab booking will be cancelled or completed. With an accuracy target of ≥90%, 
+                this system helps optimize driver allocation and enhance customer experience.
+            </p>
+            
+            <div class="features">
+                <div class="feature">
+                    <h3>📊 Data Input</h3>
+                    <p>Upload booking data in CSV format with fields like booking time, trip details, vehicle model, and area IDs.</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🔧 Preprocessing</h3>
+                    <p>Automatic handling of missing values, feature engineering (booking gap, peak hours, weekend flags).</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>🤖 ML Prediction</h3>
+                    <p>Random Forest Classifier trained on historical data with 70/30 train-test split for accurate predictions.</p>
+                </div>
+                
+                <div class="feature">
+                    <h3>📈 Insights</h3>
+                    <p>View model accuracy, precision, recall, F1-score, confusion matrix, and feature importance.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Train Model</h2>
+            <div class="upload-section">
+                <p style="margin-bottom: 15px;">Upload your training dataset (CSV format) to train the prediction model.</p>
+                
+                <form id="trainForm" enctype="multipart/form-data">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="trainFile" name="file" accept=".csv" required>
+                        <label for="trainFile" class="file-input-label">Choose CSV File</label>
+                    </div>
+                    <div id="fileName" style="margin: 10px 0; color: #666;"></div>
+                    <button type="submit" class="btn">Train Model</button>
+                    <a href="/sample-data" class="btn btn-secondary">Get Sample Data</a>
+                </form>
+                
+                <div id="trainLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px;">Training model, please wait...</p>
+                </div>
+                
+                <div id="trainMessage"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Quick Start Guide</h2>
+            <ol style="line-height: 2; color: #666;">
+                <li>Download the sample dataset to understand the required format</li>
+                <li>Upload your training data to train the model</li>
+                <li>View the evaluation dashboard to see model performance</li>
+                <li>Use the prediction page to make predictions on new bookings</li>
+            </ol>
+        </div>
+        
+        <div class="footer">
+            <p>YourCab Cancellation Prediction System | Powered by Random Forest ML</p>
+        </div>
+    </div>
+    
+    <script>
+        // Display selected file name
+        document.getElementById('trainFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : '';
+            document.getElementById('fileName').textContent = fileName ? `Selected: ${fileName}` : '';
+        });
+        
+        // Handle form submission
+        document.getElementById('trainForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const messageDiv = document.getElementById('trainMessage');
+            const loadingDiv = document.getElementById('trainLoading');
+            
+            messageDiv.innerHTML = '';
+            loadingDiv.classList.add('active');
+            
+            try {
+                const response = await fetch('/train', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                loadingDiv.classList.remove('active');
+                
+                if (result.success) {
+                    messageDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>Success!</strong> ${result.message}<br>
+                            Accuracy: ${result.metrics.accuracy}% | 
+                            Precision: ${result.metrics.precision}% | 
+                            Recall: ${result.metrics.recall}% | 
+                            F1-Score: ${result.metrics.f1_score}%
+                            <br><br>
+                            <a href="/dashboard" class="btn">View Dashboard</a>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <div class="alert alert-error">
+                            <strong>Error:</strong> ${result.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loadingDiv.classList.remove('active');
+                messageDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
