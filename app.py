@@ -223,7 +223,9 @@ def train():
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log error for debugging but don't expose stack trace
+        app.logger.error(f"Training error: {e}")
+        return jsonify({'error': 'An error occurred during model training. Please check your data format.'}), 500
 
 @app.route('/dashboard')
 def dashboard():
@@ -341,7 +343,9 @@ def predict():
             })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log error for debugging but don't expose stack trace
+        app.logger.error(f"Prediction error: {e}")
+        return jsonify({'error': 'An error occurred during prediction. Please check your input data.'}), 500
 
 @app.route('/download/predictions')
 def download_predictions():
@@ -372,4 +376,8 @@ if __name__ == '__main__':
         train_model('YourCabs.csv')
         print(f"Model trained! Accuracy: {metrics['accuracy']}%")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use debug=False in production for security
+    # Set debug=True only during development
+    import os
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
